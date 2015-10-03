@@ -21,6 +21,6 @@ namespace Poll.Models
         [Column("MovieID")]
         public virtual Movie Movie { get; set; }
         [Column("Evaluation")]
-        public int Grade { get; set; }
+        public int? Grade { get; set; }
     }
 }

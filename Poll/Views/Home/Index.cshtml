@@ -1,31 +1,78 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
-
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-
+﻿@model Poll.Models.PollViewModel
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+    <div class="col-md-6 col-md-offset-3">
+
+        @using (Html.BeginForm("Index", "Home", null, FormMethod.Post, new { @class = "form", role = "form" }))
+        {
+            <div class="alert alert-info">
+                <p>
+                    We would like you to vote the following movies. There is @Model.Votes.Count of them, but it shouldn't take too long.
+                </p>
+                <p>
+                    For your convenience, we can automatically proceed to the next movie after voting so you don't have to scroll at all.
+                    You can always scroll back to change your vote.
+                </p>
+                <label>
+                    <input type="checkbox" id="autoscroll" checked /> Sounds great, do the scrolling for me.
+                </label>
+            </div>
+            <div class="form-group">
+                <label>First, let us know what is your name (required):</label>
+                @Html.EditorFor(x => x.PersonName, "", new {htmlAttributes = new {@class = "form-control", style = "margin: auto"}})
+                <div>@Html.ValidationMessageFor(x => x.PersonName, "", new { @class = "text-danger" })</div>
+                <label>then, let's start voting:</label>
+            </div>
+
+            <hr/>
+
+            for (var i = 0; i < Model.Votes.Count; i++)
+            {
+                <div class="form-group">
+                    <label>
+                        <a target="_blank" href="https://www.themoviedb.org/movie/@(Model.Votes[i].MovieTMBID)?language=en">
+                            @Model.Votes[i].MovieTitle
+                            <i class="glyphicon glyphicon-new-window"></i>
+                        </a>
+                    </label>
+                    <div style="margin-bottom: 20px;">
+                        <i class="glyphicon glyphicon-remove"></i>
+                        <div class="btn-group btn-group-lg">
+                            @for (var j = 1; j < 6; j++)
+                            {
+                                <a href="#" data-val="@j" class="btn btn-default btn-radio @(Model.Votes[i].Grade.HasValue && Model.Votes[i].Grade == j ? "active" : "")">
+                                    &nbsp;&nbsp;@j&nbsp;&nbsp;
+                                </a>
+                            }
+                        </div>
+                        <i class="glyphicon glyphicon-heart"></i>
+                        @Html.HiddenFor(x => Model.Votes[i].Grade, new { @class = "hookGrade" })
+                        @Html.HiddenFor(x => Model.Votes[i].MovieId)
+                        @Html.HiddenFor(x => Model.Votes[i].MovieTitle)
+                    </div>
+
+                    <a href="#" class="btn btn-default btn-radio @(!Model.Votes[i].Grade.HasValue ? "active" : "")">I haven't seen it</a>
+                </div>
+                <hr />
+            }
+
+            <button type="submit" class="btn btn-success btn-lg">Submit</button>
+        }
+
     </div>
 </div>
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('body').on('click', '.btn-radio', function (e) {
+                e.preventDefault();
+                var group = $(this).closest('.form-group');
+                $('.btn-radio', group).removeClass('active');
+                $(this).addClass('active');
+                $('.hookGrade', group).val($(this).data('val') || null);
+                $('html, body').animate({
+                    'scrollTop': group.next().next().offset().top
+                });
+            });
+        });
+    </script>
+}

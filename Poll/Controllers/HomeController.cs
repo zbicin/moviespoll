@@ -10,28 +10,54 @@ namespace Poll.Controllers
 {
     public class HomeController : Controller
     {
+        private ApplicationDbContext Context;
+
+        public HomeController() : base()
+        {
+            this.Context = new ApplicationDbContext();
+        }
         public ActionResult Index()
         {
-            return View();
+            return View(new PollViewModel(Context.Movies.ToList()));
+        }
+
+        [HttpPost]
+        public ActionResult Index(PollViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var author = new Person()
+                {
+                    Description = model.PersonName
+                };
+
+                this.Context.Persons.Add(author);
+                this.Context.SaveChanges();
+
+                foreach (var singleVote in model.Votes)
+                {
+                    this.Context.Evaluations.Add(new Evaluation()
+                    {
+                        Grade = singleVote.Grade,
+                        Movie = Context.Movies.SingleOrDefault(m => m.Id == singleVote.MovieId),
+                        Person = author
+                    });
+                }
+                this.Context.SaveChanges();
+                return RedirectToAction("Thanks");
+            }
+            return View(model);
         }
 
         public ActionResult Init()
         {
-            new ApplicationDbContext().Database.Initialize(true);
+            Context.Database.Delete();
+            Context.Database.Initialize(true);
             return View("Index");
         }
 
-        public ActionResult About()
+        public ActionResult Thanks()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
     }
