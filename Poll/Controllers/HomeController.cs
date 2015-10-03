@@ -16,13 +16,13 @@ namespace Poll.Controllers
         {
             this.Context = new ApplicationDbContext();
         }
-        public ActionResult Index()
+        public ActionResult Poll()
         {
             return View(new PollViewModel(Context.Movies.ToList()));
         }
 
         [HttpPost]
-        public ActionResult Index(PollViewModel model)
+        public ActionResult Poll(PollViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -53,7 +53,7 @@ namespace Poll.Controllers
         {
             Context.Database.Delete();
             Context.Database.Initialize(true);
-            return View("Index");
+            return View("Poll");
         }
 
         public ActionResult Thanks()
